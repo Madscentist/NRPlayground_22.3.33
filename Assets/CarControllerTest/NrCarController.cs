@@ -130,6 +130,7 @@ namespace CarControllerTest
             public float nosForce;
             public float dragFactor;
 
+            public AnimationCurve accelerationCurve;
             public AnimationCurve turningCurve;
             public AnimationCurve turningBrakingCurve;
 
@@ -180,7 +181,7 @@ namespace CarControllerTest
             TurningUpdate();
             FrictionUpdate();
             BrakeUpdate();
-            DriftUpdate();
+            //DriftUpdate();
 
             // apply movement
             UpdateInWheels();
@@ -190,7 +191,7 @@ namespace CarControllerTest
         {
             UpdateVisualTire();
             //DriftingTrail();
-            
+
             foreach (var wheel in wheels)
             {
                 wheel.DriftingTrail(status.isSlip);
@@ -255,7 +256,6 @@ namespace CarControllerTest
 
         private void GroundCheck()
         {
-            
         }
 
         #endregion
@@ -267,15 +267,15 @@ namespace CarControllerTest
         [SerializeField] private float currentTurningAngle;
         private float currentDragForce;
 
-        private bool _isDrifting;
+        [SerializeField] private bool _isDrifting;
 
         private void AccelerationUpdate()
         {
-            currentAcceleration = inputs.acceleratorWeight * setting.maxAccelerateForce +
-                                  (inputs.nos ? setting.nosForce : 0f) -
-                                  currentDragForce * (status.kmH > 0 ? 1f : -1f);
+            currentDragForce = status.kmH * status.kmH * setting.dragFactor;
 
-            
+            currentAcceleration = inputs.acceleratorWeight *
+                                  setting.maxAccelerateForce +
+                                  (inputs.nos ? setting.nosForce : 0f);
         }
 
         private void TurningUpdate()
@@ -286,10 +286,8 @@ namespace CarControllerTest
 
         private void FrictionUpdate()
         {
-            currentDragForce = status.kmH * status.kmH * setting.dragFactor;
-            
-            rb.AddForce( - rb.velocity.normalized * (currentDragForce + (status.isSlip ? currentDragForce / 2f : 0f)));
-
+            rb.AddForce(-rb.velocity.normalized *
+                        (currentDragForce + (status.isSlip ? currentDragForce / 2f : 0f)));
         }
 
         private void BrakeUpdate()
@@ -314,17 +312,17 @@ namespace CarControllerTest
         {
             driftSmoothFactor = driftFactorNumber * Time.fixedDeltaTime;
 
-            if (inputs.drift)
+            if (inputs.drift && inputs.turnWeight is > 0.5f or < -0.5f)
             {
-                Drifting_v1_On();
+                Drifting_On();
             }
             else
             {
-                Drifting_v1_Off();
+                Drifting_Off();
             }
         }
 
-        private void Drifting_v1_On()
+        private void Drifting_On()
         {
             _isDrifting = true;
 
@@ -348,11 +346,14 @@ namespace CarControllerTest
 
             SetWheelFriction(wheels[0].collider, sidewaysFriction, forwardFriction);
             SetWheelFriction(wheels[1].collider, sidewaysFriction, forwardFriction);
+            SetWheelFriction(wheels[2].collider, sidewaysFriction, forwardFriction);
+            SetWheelFriction(wheels[3].collider, sidewaysFriction, forwardFriction);
+
 
             rb.AddForce(transform.forward * ((status.kmH / 400f) * 1000f));
         }
 
-        private void Drifting_v1_Off()
+        private void Drifting_Off()
         {
             _isDrifting = false;
             forwardFriction = wheels[0].collider.forwardFriction;
@@ -471,15 +472,15 @@ namespace CarControllerTest
         private void DriftingTrail()
         {
             var carDir = rb.velocity.normalized;
-            
+
             foreach (var wheel in wheels)
             {
                 var angle = Vector3.Angle(wheel.mesh.forward, carDir);
-                
+
                 wheel.DriftingTrail(angle > setting.maxTurningAngle);
             }
         }
-        
+
         private void VisualWheelTurning(NrWheel wheel)
         {
             var col = wheel.collider;

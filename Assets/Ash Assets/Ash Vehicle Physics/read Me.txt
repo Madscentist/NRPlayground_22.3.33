@@ -1,0 +1,5 @@
+do not import the old version "AshVP old with bike.unitypackage" in same project as the new version. 
+first delete new version from project.
+In the original package, bikes were not there. I added them later as a bonus. 
+But it was hard to maintain them. so i removed them. 
+you can use the old version if you need bikes. but you will have to setup bikes manually.
