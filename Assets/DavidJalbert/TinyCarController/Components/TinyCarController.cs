@@ -86,7 +86,7 @@ namespace DavidJalbert
         private float forwardVelocity = 0;
         private float rightVelocity = 0;
         private Vector3 gravityDirection = Vector3.zero;
-        private float inputSteering = 0;
+        protected float inputSteering = 0;
         private float inputMotor = 0;
         private PhysicMaterial customPhysicMaterial;
         private Quaternion groundRotation;

@@ -46,7 +46,7 @@ namespace AshVP
         public AnimationCurve driftCurve;
         public AnimationCurve engineCurve;
 
-        private float speedValue, fricValue, turnValue, curveVelocity, brakeInput;
+        [SerializeField]private float speedValue, fricValue, turnValue, curveVelocity, brakeInput;
         [HideInInspector]
         public Vector3 carVelocity;
         [HideInInspector]
